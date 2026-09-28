@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Planner UMKM Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        dark: '#16181d',
+                        darker: '#0f1115',
+                        neon: '#00e5ff',
+                        neonHover: '#00bccc',
+                        card: '#ffffff',
+                        cardDark: '#f8fafc'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .nav-item.active {
+            background-color: rgba(0, 229, 255, 0.1);
+            border-right: 4px solid #00e5ff;
+            color: #00e5ff;
+        }
+
+        .page-section { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .page-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mode Cetak (PDF Export) */
+        @media print {
+            body { background: white !important; }
+            #sidebar, #header-actions { display: none !important; }
+            #main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+            .page-section { display: block !important; page-break-after: always; padding: 20px; }
+            .card { box-shadow: none !important; border: 1px solid #e2e8f0; break-inside: avoid; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-darker text-slate-300 flex flex-col transition-all duration-300 z-20 h-full fixed md:relative">
+        <div class="p-6 flex items-center gap-3 border-b border-gray-800">
+            <div class="w-10 h-10 rounded-xl bg-neon text-darker flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(0,229,255,0.4)]">
+                <i class='bx bx-store-alt'></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg text-white tracking-wide">UMKM<span class="text-neon">PRO</span></h1>
+                <p class="text-xs text-slate-500">Digital Planner</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="#" data-target="blueprint" class="nav-item active flex items-center gap-3 px-6 py-3 hover:text-neon transition-colors">
+                        <i class='bx bx-target-lock text-xl'></i> Business Blueprint
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-target="stok" class="nav-item flex items-center gap-3 px-6 py-3 hover:text-neon transition-colors">
+                        <i class='bx bx-box text-xl'></i> Manajemen Stok
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-target="reseller" class="nav-item flex items-center gap-3 px-6 py-3 hover:text-neon transition-colors">
+                        <i class='bx bx-group text-xl'></i> Data Reseller
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-target="keuangan" class="nav-item flex items-center gap-3 px-6 py-3 hover:text-neon transition-colors">
+                        <i class='bx bx-wallet text-xl'></i> Arus Kas (Keuangan)
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-target="marketing" class="nav-item flex items-center gap-3 px-6 py-3 hover:text-neon transition-colors">
+                        <i class='bx bx-calendar-star text-xl'></i> Marketing Planner
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-target="evaluasi" class="nav-item flex items-center gap-3 px-6 py-3 hover:text-neon transition-colors">
+                        <i class='bx bx-line-chart text-xl'></i> Evaluasi Bulanan
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="p-6 border-t border-gray-800 text-xs text-slate-500 text-center">
+            &copy; 2026 UMKM Planner
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content" class="flex-1 h-full overflow-y-auto bg-slate-100 flex flex-col relative w-full">
+        
+        <!-- Header -->
+        <header class="bg-white px-8 py-5 border-b border-slate-200 flex justify-between items-center sticky top-0 z-10">
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-btn" class="md:hidden text-slate-600 text-2xl">
+                    <i class='bx bx-menu'></i>
+                </button>
+                <h2 id="page-title" class="text-2xl font-bold text-slate-800">Business Blueprint</h2>
+            </div>
+            <div id="header-actions" class="flex gap-3">
+                <button onclick="clearData()" class="px-4 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 text-sm font-semibold transition-all">
+                    <i class='bx bx-trash mr-1'></i> Reset Data
+                </button>
+                <button onclick="exportPDF()" class="px-4 py-2 rounded-lg bg-darker text-neon hover:bg-black shadow-lg shadow-cyan-500/20 text-sm font-semibold transition-all">
+                    <i class='bx bx-printer mr-1'></i> Export / Cetak PDF
+                </button>
+            </div>
+        </header>
+
+        <div class="p-8 max-w-7xl mx-auto w-full flex-1">
+            
+            <!-- 1. Blueprint -->
+            <section id="blueprint" class="page-section active">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class='bx bx-buildings text-neon text-2xl'></i> Profil Bisnis</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Nama Brand / Toko</label>
+                                <input type="text" id="bp-name" onchange="saveData()" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-neon focus:ring-1 focus:ring-neon outline-none" placeholder="Masukkan nama bisnis kamu...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Visi & Misi Bisnis</label>
+                                <textarea id="bp-vision" onchange="saveData()" rows="4" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-neon focus:ring-1 focus:ring-neon outline-none" placeholder="Apa tujuan besar dari bisnismu?"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class='bx bx-target-lock text-neon text-2xl'></i> Target Bulan Ini</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Target Omset (Rp)</label>
+                                <input type="number" id="bp-omset" onchange="saveData()" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-neon focus:ring-1 focus:ring-neon outline-none" placeholder="Contoh: 10000000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Fokus Utama / Strategi</label>
+                                <textarea id="bp-strategy" onchange="saveData()" rows="4" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-neon focus:ring-1 focus:ring-neon outline-none" placeholder="Langkah konkrit mencapai target (misal: Live TikTok tiap malam)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Stok -->
+            <section id="stok" class="page-section">
+                <div class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold">Katalog & Inventory Produk</h3>
+                        <button onclick="addStokRow()" class="no-print bg-slate-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-700 transition-colors"><i class='bx bx-plus'></i> Tambah Produk</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-sm border-y border-slate-200">
+                                    <th class="py-3 px-4 font-medium">Nama Produk</th>
+                                    <th class="py-3 px-4 font-medium">Harga Modal (Rp)</th>
+                                    <th class="py-3 px-4 font-medium">Harga Jual (Rp)</th>
+                                    <th class="py-3 px-4 font-medium">Stok Masuk</th>
+                                    <th class="py-3 px-4 font-medium">Terjual</th>
+                                    <th class="py-3 px-4 font-medium text-center">Sisa Stok</th>
+                                    <th class="py-3 px-4 font-medium no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stok-body" class="text-sm">
+                                <!-- Baris dirender via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Reseller -->
+            <section id="reseller" class="page-section">
+                <div class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold">Database Reseller & VIP</h3>
+                        <button onclick="addResellerRow()" class="no-print bg-slate-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-700 transition-colors"><i class='bx bx-plus'></i> Tambah Reseller</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-sm border-y border-slate-200">
+                                    <th class="py-3 px-4 font-medium">Nama Reseller</th>
+                                    <th class="py-3 px-4 font-medium">Nomor WhatsApp</th>
+                                    <th class="py-3 px-4 font-medium">Level / Kategori</th>
+                                    <th class="py-3 px-4 font-medium">Target Bulanan</th>
+                                    <th class="py-3 px-4 font-medium no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reseller-body" class="text-sm">
+                                <!-- Baris dirender via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Keuangan (Arus Kas) -->
+            <section id="keuangan" class="page-section">
+                <!-- Dashboard Keuangan -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg shadow-green-500/20">
+                        <p class="text-green-100 text-sm font-medium mb-1">Total Pemasukan</p>
+                        <h3 class="text-3xl font-bold" id="total-income">Rp 0</h3>
+                    </div>
+                    <div class="bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl p-6 text-white shadow-lg shadow-red-500/20">
+                        <p class="text-red-100 text-sm font-medium mb-1">Total Pengeluaran</p>
+                        <h3 class="text-3xl font-bold" id="total-expense">Rp 0</h3>
+                    </div>
+                    <div class="bg-gradient-to-br from-darker to-slate-800 rounded-2xl p-6 text-neon shadow-lg shadow-cyan-500/10 border border-gray-700">
+                        <p class="text-slate-400 text-sm font-medium mb-1">Laba Bersih</p>
+                        <h3 class="text-3xl font-bold" id="net-profit">Rp 0</h3>
+                    </div>
+                </div>
+
+                <div class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold">Catatan Transaksi</h3>
+                        <button onclick="addFinanceRow()" class="no-print bg-neon text-darker font-bold px-4 py-2 rounded-lg text-sm hover:bg-cyan-400 transition-colors"><i class='bx bx-plus'></i> Tambah Transaksi</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-sm border-y border-slate-200">
+                                    <th class="py-3 px-4 font-medium">Tanggal</th>
+                                    <th class="py-3 px-4 font-medium">Keterangan / Item</th>
+                                    <th class="py-3 px-4 font-medium">Jenis</th>
+                                    <th class="py-3 px-4 font-medium">Nominal (Rp)</th>
+                                    <th class="py-3 px-4 font-medium no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="finance-body" class="text-sm">
+                                <!-- Baris dirender via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Marketing -->
+            <section id="marketing" class="page-section">
+                <div class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-lg font-bold mb-4">Jadwal Konten & Promosi Sosial Media</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Hari Senin-Kamis Contoh -->
+                        <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+                            <h4 class="font-bold text-neon mb-2 bg-darker inline-block px-3 py-1 rounded text-xs">Senin</h4>
+                            <textarea id="mkt-senin" onchange="saveData()" class="w-full p-2 border border-slate-300 rounded text-sm h-24 focus:border-neon outline-none" placeholder="Ide konten Senin..."></textarea>
+                        </div>
+                        <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+                            <h4 class="font-bold text-neon mb-2 bg-darker inline-block px-3 py-1 rounded text-xs">Rabu</h4>
+                            <textarea id="mkt-rabu" onchange="saveData()" class="w-full p-2 border border-slate-300 rounded text-sm h-24 focus:border-neon outline-none" placeholder="Ide konten Rabu..."></textarea>
+                        </div>
+                        <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+                            <h4 class="font-bold text-neon mb-2 bg-darker inline-block px-3 py-1 rounded text-xs">Jumat</h4>
+                            <textarea id="mkt-jumat" onchange="saveData()" class="w-full p-2 border border-slate-300 rounded text-sm h-24 focus:border-neon outline-none" placeholder="Promo Jumat Berkah..."></textarea>
+                        </div>
+                        <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+                            <h4 class="font-bold text-neon mb-2 bg-darker inline-block px-3 py-1 rounded text-xs">Akhir Pekan</h4>
+                            <textarea id="mkt-weekend" onchange="saveData()" class="w-full p-2 border border-slate-300 rounded text-sm h-24 focus:border-neon outline-none" placeholder="Live Sale Weekend..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Evaluasi -->
+            <section id="evaluasi" class="page-section">
+                <div class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-full">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class='bx bx-notepad text-neon text-2xl'></i> Evaluasi & Review Bulanan</h3>
+                    <p class="text-sm text-slate-500 mb-6">Tuliskan apa yang berjalan lancar bulan ini, apa yang kurang, dan strategi yang harus diperbaiki untuk bulan depan.</p>
+                    
+                    <textarea id="eval-notes" onchange="saveData()" class="w-full p-4 border border-slate-300 rounded-xl text-sm min-h-[300px] focus:border-neon focus:ring-1 focus:ring-neon outline-none resize-none leading-relaxed" placeholder="- Produk terlaris bulan ini: ...&#10;- Komplain pelanggan terbanyak: ...&#10;- Tindakan perbaikan: ..."></textarea>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // --- 1. STATE MANAGEMENT (LocalStorage) ---
+        const DEFAULT_STATE = {
+            blueprint: { name: '', vision: '', omset: '', strategy: '' },
+            stok: [
+                { id: Date.now(), nama: '', beli: 0, jual: 0, masuk: 0, keluar: 0 }
+            ],
+            reseller: [
+                { id: Date.now(), nama: '', wa: '', level: 'Reguler', target: '' }
+            ],
+            keuangan: [
+                { id: Date.now(), tgl: '', ket: '', jenis: 'pemasukan', nominal: 0 }
+            ],
+            marketing: { senin: '', rabu: '', jumat: '', weekend: '' },
+            evaluasi: ''
+        };
+
+        let appData = JSON.parse(localStorage.getItem('umkmPlannerData')) || DEFAULT_STATE;
+
+        // --- 2. CORE FUNCTIONS ---
+        function saveData() {
+            // Ambil data statis dari input
+            appData.blueprint.name = document.getElementById('bp-name').value;
+            appData.blueprint.vision = document.getElementById('bp-vision').value;
+            appData.blueprint.omset = document.getElementById('bp-omset').value;
+            appData.blueprint.strategy = d
